@@ -1,6 +1,6 @@
-const cheerio = require('cheerio')
+import * as cheerio from 'cheerio'
 
-async function titleLengthCheck (content) {
+export default async function titleLengthCheck(content) {
   const $ = cheerio.load(content.html)
   const title = $('title').text().trim()
   const length = title.length
@@ -10,5 +10,3 @@ async function titleLengthCheck (content) {
     details: { length, recommended: '30-60 chars', actual: title }
   }
 }
-
-module.exports = titleLengthCheck

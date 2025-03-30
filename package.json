@@ -5,7 +5,7 @@
   "main": "cli.js",
   "scripts": {
     "audit": "node cli.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "standard --fix"
   },
   "keywords": ["seo", "audit", "performance", "website", "puppeteer"],
   "author": "",
@@ -13,9 +13,13 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
     "commander": "^11.1.0",
-    "puppeteer": "^22.6.0"
+    "puppeteer": "^22.6.0",
+    "lighthouse": "^11.5.0",
+    "html-validator": "^6.4.1",
+    "chrome-launcher": "^0.15.2"
   },
   "devDependencies": {
     "standard": "^17.1.0"
-  }
+  },
+  "type": "module"
 }

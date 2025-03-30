@@ -1,4 +1,4 @@
-async function responseTimeCheck (content) {
+export default async function responseTimeCheck(content) {
   const responseTime = content.responseTime
 
   return {
@@ -6,5 +6,3 @@ async function responseTimeCheck (content) {
     details: { responseTimeMs: responseTime, recommended: '<2000 ms' }
   }
 }
-
-module.exports = responseTimeCheck

@@ -1,7 +1,5 @@
-const fs = require('fs')
+import fs from 'fs'
 
-function jsonReporter (results, outputPath) {
+export default function jsonReporter(results, outputPath) {
   fs.writeFileSync(outputPath, JSON.stringify(results, null, 2))
 }
-
-module.exports = jsonReporter

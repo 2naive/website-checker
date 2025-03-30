@@ -1,7 +1,7 @@
-const puppeteer = require('puppeteer')
+import puppeteer from 'puppeteer'
 
-class Parser {
-  async fetch (url) {
+export default class Parser {
+  async fetch(url) {
     const browser = await puppeteer.launch()
     const page = await browser.newPage()
 
@@ -16,5 +16,3 @@ class Parser {
     return { html, responseTime, url }
   }
 }
-
-module.exports = Parser
