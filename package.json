@@ -1,0 +1,21 @@
+{
+  "name": "atomic-site-audit",
+  "version": "1.0.0",
+  "description": "Modular site audit tool for checking SEO, performance, and other metrics.",
+  "main": "cli.js",
+  "scripts": {
+    "audit": "node cli.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["seo", "audit", "performance", "website", "puppeteer"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "commander": "^11.1.0",
+    "puppeteer": "^22.6.0"
+  },
+  "devDependencies": {
+    "standard": "^17.1.0"
+  }
+}

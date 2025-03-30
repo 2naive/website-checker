@@ -1,0 +1,17 @@
+{
+  "responseTimeCheck": {
+    "passed": false,
+    "details": {
+      "responseTimeMs": 3710,
+      "recommended": "<2000 ms"
+    }
+  },
+  "titleLengthCheck": {
+    "passed": true,
+    "details": {
+      "length": 37,
+      "recommended": "30-60 chars",
+      "actual": "Telebot: Telegram ⇄ Slack integration"
+    }
+  }
+}
