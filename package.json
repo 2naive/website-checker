@@ -16,7 +16,15 @@
     "puppeteer": "^22.15.0",
     "lighthouse": "^11.7.1",
     "html-validator": "^6.0.1",
-    "chrome-launcher": "^1.1.2"
+    "chrome-launcher": "^1.1.2",
+    "metascraper": "latest",
+    "metascraper-title": "latest",
+    "metascraper-description": "latest",
+    "metascraper-url": "latest",
+    "broken-link-checker": "latest",
+    "fast-xml-parser": "latest",
+    "robots-parser": "latest",
+    "structured-data-testing-tool": "latest"
   },
   "devDependencies": {
     "standard": "^17.1.2"
