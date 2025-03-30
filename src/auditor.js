@@ -11,21 +11,33 @@ export default class Auditor {
   }
 
   async audit(url, depth = 0, visited = new Set(), onResult = () => {}) {
-    if (visited.has(url) || depth < 0) return
-    visited.add(url)
+    const visitedUrls = new Set()
 
-    const content = await this.parser.fetch(url)
+    const siteChecks = this.checks.filter(({ scope }) => scope === 'site')
+    const finalChecks = this.checks.filter(({ scope }) => scope === 'final')
+    const pageChecks = this.checks.filter(({ scope }) => scope !== 'site' && scope !== 'final')
 
-    // Выполняем site-wide проверки только для первого вызова
-    if (visited.size === 1) {
-      const siteChecks = this.checks.filter(({ scope }) => scope === 'site')
-      for (const { name, check } of siteChecks) {
-        const result = await check(content)
-        onResult(name, result, 'site-wide')
-      }
+    const siteContent = await this.parser.fetch(url)
+
+    for (const { name, check } of siteChecks) {
+      const result = await check({ url, html: siteContent.html })
+      onResult(name, result, 'site-wide')
     }
 
-    const pageChecks = this.checks.filter(({ scope }) => scope !== 'site')
+    await this.auditPage(url, depth, visited, visitedUrls, pageChecks, onResult)
+
+    for (const { name, check } of finalChecks) {
+      const result = await check(null, visitedUrls)
+      onResult(name, result, 'final')
+    }
+  }
+
+  async auditPage(url, depth, visited, visitedUrls, pageChecks, onResult) {
+    if (visited.has(url) || depth < 0) return
+    visited.add(url)
+    visitedUrls.add(url)
+
+    const content = await this.parser.fetch(url)
 
     for (const { name, check } of pageChecks) {
       const result = await check(content)
@@ -35,7 +47,7 @@ export default class Auditor {
     if (depth > 0) {
       const childUrls = this.extractLinks(content.html, url)
       for (const childUrl of childUrls) {
-        await this.audit(childUrl, depth - 1, visited, onResult)
+        await this.auditPage(childUrl, depth - 1, visited, visitedUrls, pageChecks, onResult)
       }
     }
   }
