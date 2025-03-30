@@ -42,7 +42,10 @@ export default class Auditor {
       checksToLoad.map(async checkPath => {
         const fullPath = path.resolve(`checks/${checkPath}.js`)
         const module = await import(`file://${fullPath}`)
-        return { name: checkPath, check: module.default }
+        return {
+          name: checkPath,
+          check: module.default
+        }
       })
     )
 

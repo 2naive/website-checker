@@ -3,6 +3,10 @@ export default async function responseTimeCheck(content) {
 
   return {
     passed: responseTime < 2000,
-    details: { responseTimeMs: responseTime, recommended: '<2000 ms' }
+    details: {
+      actual: `${responseTime} ms`,
+      recommended: '< 2000 ms',
+      message: responseTime >= 2000 ? 'Response time too high.' : ''
+    }
   }
 }

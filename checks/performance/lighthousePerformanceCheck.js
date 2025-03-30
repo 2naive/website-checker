@@ -17,6 +17,10 @@ export default async function lighthousePerformanceCheck(content) {
 
   return {
     passed: performanceScore >= 80,
-    details: { performanceScore, recommended: '>=80' }
+    details: {
+      actual: `${performanceScore}`,
+      recommended: '≥ 80',
+      message: performanceScore < 80 ? 'Performance score below recommended.' : ''
+    }
   }
 }

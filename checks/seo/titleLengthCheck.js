@@ -7,6 +7,10 @@ export default async function titleLengthCheck(content) {
 
   return {
     passed: length >= 30 && length <= 60,
-    details: { length, recommended: '30-60 chars', actual: title }
+    details: {
+      actual: `${length} chars`,
+      recommended: '30-60 chars',
+      message: length < 30 ? 'Title too short.' : (length > 60 ? 'Title too long.' : '')
+    }
   }
 }

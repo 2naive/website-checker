@@ -1,3 +1,4 @@
+// === cli.js ===
 import { Command } from 'commander'
 import Parser from './src/parser.js'
 import Auditor from './src/auditor.js'
@@ -24,40 +25,49 @@ const { json, config } = program.opts()
 const parser = new Parser()
 const auditor = new Auditor(parser, await Auditor.loadChecks(config))
 
-const results = await auditor.audit(url)
+console.log('\nAudit Results:\n')
 
-const groupedResults = {}
-Object.entries(results).forEach(([check, result]) => {
-  const parts = check.split(/\\|\//)
+let passedCount = 0
+let failedCount = 0
+const errors = []
+
+const content = await parser.fetch(url)
+
+await Promise.all(auditor.checks.map(async ({ name, check }) => {
+  const result = await check(content)
+  const parts = name.split(/\\|\//)
   const group = parts.length > 1 ? parts[0] : 'General'
   const checkName = parts.length > 1 ? parts[1] : parts[0]
+  const status = result.passed ? '✅ PASS' : '❌ FAIL'
 
-  if (!groupedResults[group]) groupedResults[group] = []
-  groupedResults[group].push({ name: checkName, result })
-})
+  console.log(`${status} [${formatCheckName(group)}] ${formatCheckName(checkName)}`)
 
-console.log('\nAudit Results:\n')
-const errors = []
-Object.entries(groupedResults).forEach(([group, checks]) => {
-  console.log(`\n${formatCheckName(group)}:`)
-  checks.forEach(({ name, result }) => {
-    const status = result.passed ? '✅ PASS' : '❌ FAIL'
-    console.log(`  ${status} ${formatCheckName(name)}`)
-    if (!result.passed) {
-      errors.push({ check: `${formatCheckName(group)}: ${formatCheckName(name)}`, details: result.details })
-    }
-  })
-})
+  if (result.passed) {
+    passedCount += 1
+  } else {
+    failedCount += 1
+    errors.push({ check: `${formatCheckName(group)}: ${formatCheckName(checkName)}`, details: result.details })
+  }
+}))
+
+console.log('\nSummary:')
+console.log(`✅ Passed: ${passedCount}`)
+console.log(`❌ Failed: ${failedCount}\n`)
 
 if (errors.length) {
-  console.log('\nError Details:\n')
+  console.log('Error Details:\n')
   errors.forEach(({ check, details }) => {
     console.log(`❌ ${check}`)
-    console.log(JSON.stringify(details, null, 2))
+    if (details.errors && Array.isArray(details.errors)) {
+      details.errors.forEach((error, index) => {
+        console.log(`  ${index + 1}. Line ${error.lastLine}, Column ${error.lastColumn}: ${error.message}`)
+      })
+    } else {
+      console.log(`- ${details.message} (Actual: ${details.actual}, Recommended: ${details.recommended})\n`)
+    }
   })
 }
 
-if (json) jsonReporter(results, json)
+if (json) jsonReporter({ passedCount, failedCount, errors }, json)
 
-const hasFailures = errors.length > 0
-process.exit(hasFailures ? 1 : 0)
+process.exit(failedCount ? 1 : 0)
