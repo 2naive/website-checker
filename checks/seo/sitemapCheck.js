@@ -1,5 +1,6 @@
 import { XMLParser, XMLValidator } from 'fast-xml-parser'
 
+export const scope = 'site'
 export default async function sitemapCheck(content) {
   const sitemapUrl = `${new URL(content.url).origin}/sitemap.xml`
 

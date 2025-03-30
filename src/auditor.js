@@ -1,5 +1,8 @@
+// === auditor.js ===
 import path from 'path'
 import fs from 'fs'
+import { URL } from 'url'
+import * as cheerio from 'cheerio'
 
 export default class Auditor {
   constructor(parser, checks) {
@@ -7,16 +10,55 @@ export default class Auditor {
     this.checks = checks
   }
 
-  async audit(url) {
+  async audit(url, depth = 0, visited = new Set(), onResult = () => {}) {
+    if (visited.has(url) || depth < 0) return
+    visited.add(url)
+
     const content = await this.parser.fetch(url)
 
-    const results = {}
-    await Promise.all(this.checks.map(async ({ name, check }) => {
-      const result = await check(content)
-      results[name] = result
-    }))
+    // Выполняем site-wide проверки только для первого вызова
+    if (visited.size === 1) {
+      const siteChecks = this.checks.filter(({ scope }) => scope === 'site')
+      for (const { name, check } of siteChecks) {
+        const result = await check(content)
+        onResult(name, result, 'site-wide')
+      }
+    }
 
-    return results
+    const pageChecks = this.checks.filter(({ scope }) => scope !== 'site')
+
+    for (const { name, check } of pageChecks) {
+      const result = await check(content)
+      onResult(name, result, url)
+    }
+
+    if (depth > 0) {
+      const childUrls = this.extractLinks(content.html, url)
+      for (const childUrl of childUrls) {
+        await this.audit(childUrl, depth - 1, visited, onResult)
+      }
+    }
+  }
+
+  extractLinks(html, baseUrl) {
+    const $ = cheerio.load(html)
+    const baseDomain = new URL(baseUrl).origin
+    const links = new Set()
+
+    $('a[href]').each((_, element) => {
+      const href = $(element).attr('href')
+      if (href && !href.startsWith('#')) {
+        try {
+          const url = new URL(href, baseUrl)
+          url.hash = ''
+          if (url.origin === baseDomain && url.pathname.match(/\/[^.]*$/)) {
+            links.add(url.href)
+          }
+        } catch (_) {}
+      }
+    })
+
+    return [...links]
   }
 
   static async loadChecks(configPath = './config.json') {
@@ -44,7 +86,8 @@ export default class Auditor {
         const module = await import(`file://${fullPath}`)
         return {
           name: checkPath,
-          check: module.default
+          check: module.default,
+          scope: module.scope || 'page'
         }
       })
     )

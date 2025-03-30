@@ -1,5 +1,6 @@
 import robotsParser from 'robots-parser'
 
+export const scope = 'site'
 export default async function robotsCheck(content) {
   const robotsUrl = `${new URL(content.url).origin}/robots.txt`
   try {

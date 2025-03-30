@@ -11,6 +11,7 @@ program
   .option('-j, --json <path>', 'Export results to JSON file')
   .option('-c, --config <path>', 'Config file path', './config.json')
   .option('-e, --exclude <items>', 'Comma-separated list of checks or groups to exclude (file names without folders and Check.js postfix, or group names)')
+  .option('-d, --depth <number>', 'Depth of parsing child pages', parseInt, 0)
   .parse(process.argv)
 
 const formatCheckName = (name) => {
@@ -23,7 +24,7 @@ const formatCheckName = (name) => {
 }
 
 const url = program.args[0]
-const { json, config, exclude } = program.opts()
+const { json, config, exclude, depth } = program.opts()
 const parser = new Parser()
 let checks = await Auditor.loadChecks(config)
 
@@ -45,24 +46,22 @@ let passedCount = 0
 let failedCount = 0
 const errors = []
 
-const content = await parser.fetch(url)
-
-await Promise.all(auditor.checks.map(async ({ name, check }) => {
-  const result = await check(content)
+await auditor.audit(url, depth, new Set(), (name, result, pageUrl) => {
   const parts = name.split(/\\|\//)
   const group = parts.length > 1 ? parts[0] : 'General'
   const checkName = parts.length > 1 ? parts[1] : parts[0]
   const status = result.passed ? '✅' : '❌'
 
-  console.log(`${status} [${formatCheckName(group)}] ${formatCheckName(checkName)}`)
+  console.log(`${status} [${formatCheckName(group)}] ${formatCheckName(checkName)} (${pageUrl})`)
 
   if (result.passed) {
     passedCount += 1
   } else {
     failedCount += 1
-    errors.push({ group: formatCheckName(group), checkName: formatCheckName(checkName), details: result.details })
+    errors.push({ group: formatCheckName(group), checkName: formatCheckName(checkName), pageUrl, details: result.details })
   }
-}))
+})
+
 
 console.log('\nSummary:\n')
 console.log(`✅ Passed: ${passedCount}`)
@@ -71,10 +70,14 @@ console.log(`❌ Failed: ${failedCount}`)
 if (errors.length) {
   console.log('\nError Details:')
 
-  errors.sort((a, b) => a.group.localeCompare(b.group) || a.checkName.localeCompare(b.checkName))
+  errors.sort((a, b) =>
+    a.pageUrl.localeCompare(b.pageUrl) ||
+    a.group.localeCompare(b.group) ||
+    a.checkName.localeCompare(b.checkName)
+  )
 
-  errors.forEach(({ group, checkName, details }, idx) => {
-    console.log(`\n${idx + 1}. ❌ ${group}: ${checkName}`)
+  errors.forEach(({ group, checkName, pageUrl, details }, idx) => {
+    console.log(`\n${idx + 1}. ❌ ${group}: ${checkName} (${pageUrl})`)
     if (details.message || details.actual || details.recommended) {
       console.log(`  ${details.message + ' ' || ''}(Actual: ${details.actual || '-'}, Recommended: ${details.recommended || '-'})`)
     }
