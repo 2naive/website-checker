@@ -18,20 +18,23 @@ export default class Auditor {
     const pageChecks = this.checks.filter(({ scope }) => scope !== 'site' && scope !== 'final')
 
     const siteContent = await this.parser.fetch(url)
-
     const context = { cheerio }
 
-    for (const { name, check } of siteChecks) {
+    await Promise.all(siteChecks.map(async ({ name, check }) => {
+      const start = Date.now()
       const result = await check({ url, html: siteContent.html, context })
-      onResult(name, result, 'site-wide')
-    }
+      const duration = Date.now() - start
+      onResult(name, result, 'site-wide', duration)
+    }))
 
     await this.auditPage(url, depth, visited, visitedUrls, pageChecks, onResult, context)
 
-    for (const { name, check } of finalChecks) {
+    await Promise.all(finalChecks.map(async ({ name, check }) => {
+      const start = Date.now()
       const result = await check(null, visitedUrls, context)
-      onResult(name, result, 'final')
-    }
+      const duration = Date.now() - start
+      onResult(name, result, 'final', duration)
+    }))
   }
 
   async auditPage(url, depth, visited, visitedUrls, pageChecks, onResult, context) {
@@ -41,16 +44,18 @@ export default class Auditor {
 
     const content = await this.parser.fetch(url)
 
-    for (const { name, check } of pageChecks) {
+    await Promise.all(pageChecks.map(async ({ name, check }) => {
+      const start = Date.now()
       const result = await check({ ...content, context })
-      onResult(name, result, url)
-    }
+      const duration = Date.now() - start
+      onResult(name, result, url, duration)
+    }))
 
     if (depth > 0) {
       const childUrls = this.extractLinks(content.html, url)
-      for (const childUrl of childUrls) {
-        await this.auditPage(childUrl, depth - 1, visited, visitedUrls, pageChecks, onResult, context)
-      }
+      await Promise.all(childUrls.map(childUrl =>
+        this.auditPage(childUrl, depth - 1, visited, visitedUrls, pageChecks, onResult, context)
+      ))
     }
   }
 

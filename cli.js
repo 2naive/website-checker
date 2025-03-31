@@ -45,14 +45,15 @@ console.log('\nAudit Results:\n')
 let passedCount = 0
 let failedCount = 0
 const errors = []
+const startTime = Date.now()
 
-await auditor.audit(url, depth, new Set(), (name, result, pageUrl) => {
+await auditor.audit(url, depth, new Set(), (name, result, pageUrl, duration) => {
   const parts = name.split(/\\|\//)
   const group = parts.length > 1 ? parts[0] : 'General'
   const checkName = parts.length > 1 ? parts[1] : parts[0]
   const status = result.passed ? '✅' : '❌'
 
-  console.log(`${status} [${formatCheckName(group)}] ${formatCheckName(checkName)} (${pageUrl})`)
+  process.stdout.write(`${status} [${formatCheckName(group)}] ${formatCheckName(checkName)} (${pageUrl}) – ${duration} ms\n`) // Гарантированный немедленный вывод
 
   if (result.passed) {
     passedCount += 1
@@ -61,11 +62,12 @@ await auditor.audit(url, depth, new Set(), (name, result, pageUrl) => {
     errors.push({ group: formatCheckName(group), checkName: formatCheckName(checkName), pageUrl, details: result.details })
   }
 })
-
+const totalTime = (Date.now() - startTime) / 1000
 
 console.log('\nSummary:\n')
 console.log(`✅ Passed: ${passedCount}`)
 console.log(`❌ Failed: ${failedCount}`)
+console.log(`🔹 Time: ${totalTime.toFixed(2)} s`)
 
 if (errors.length) {
   console.log('\nError Details:')

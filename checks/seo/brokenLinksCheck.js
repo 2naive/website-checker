@@ -1,10 +1,16 @@
 import pkg from 'broken-link-checker'
-const { SiteChecker } = pkg
+const { HtmlUrlChecker } = pkg
 
 export default function brokenLinksCheck(content) {
   return new Promise(resolve => {
     const brokenLinks = []
-    const checker = new SiteChecker({}, {
+    const checker = new HtmlUrlChecker({
+      excludeExternalLinks: true,
+      requestMethod: 'head',
+      timeout: 3000,
+      filterLevel: 3,
+      maxSocketsPerHost: 8
+    }, {
       link: result => {
         if (result.broken && result.url && result.url.resolved) {
           brokenLinks.push({ message: `Broken link: ${result.url.resolved}` })
