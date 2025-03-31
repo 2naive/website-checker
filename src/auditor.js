@@ -19,20 +19,22 @@ export default class Auditor {
 
     const siteContent = await this.parser.fetch(url)
 
+    const context = { cheerio }
+
     for (const { name, check } of siteChecks) {
-      const result = await check({ url, html: siteContent.html })
+      const result = await check({ url, html: siteContent.html, context })
       onResult(name, result, 'site-wide')
     }
 
-    await this.auditPage(url, depth, visited, visitedUrls, pageChecks, onResult)
+    await this.auditPage(url, depth, visited, visitedUrls, pageChecks, onResult, context)
 
     for (const { name, check } of finalChecks) {
-      const result = await check(null, visitedUrls)
+      const result = await check(null, visitedUrls, context)
       onResult(name, result, 'final')
     }
   }
 
-  async auditPage(url, depth, visited, visitedUrls, pageChecks, onResult) {
+  async auditPage(url, depth, visited, visitedUrls, pageChecks, onResult, context) {
     if (visited.has(url) || depth < 0) return
     visited.add(url)
     visitedUrls.add(url)
@@ -40,14 +42,14 @@ export default class Auditor {
     const content = await this.parser.fetch(url)
 
     for (const { name, check } of pageChecks) {
-      const result = await check(content)
+      const result = await check({ ...content, context })
       onResult(name, result, url)
     }
 
     if (depth > 0) {
       const childUrls = this.extractLinks(content.html, url)
       for (const childUrl of childUrls) {
-        await this.auditPage(childUrl, depth - 1, visited, visitedUrls, pageChecks, onResult)
+        await this.auditPage(childUrl, depth - 1, visited, visitedUrls, pageChecks, onResult, context)
       }
     }
   }
