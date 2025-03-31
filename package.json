@@ -1,5 +1,5 @@
 {
-  "name": "atomic-site-audit",
+  "name": "website-checker",
   "version": "1.0.0",
   "description": "Modular site audit tool for checking SEO, performance, and other metrics.",
   "main": "cli.js",
