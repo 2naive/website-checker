@@ -1,7 +1,10 @@
 import { structuredDataTest } from 'structured-data-testing-tool'
 import presets from 'structured-data-testing-tool/presets.js'
 
-const allPresets = Object.values(presets)
+const excludedPresets = ['SocialMedia']
+const allPresets = Object.values(presets).filter(preset => !excludedPresets.includes(preset.name))
+
+export const scope = 'page'
 
 export default async function structuredDataCheck(content) {
   try {
@@ -15,25 +18,28 @@ export default async function structuredDataCheck(content) {
     }))
 
     return {
-      passed: results.passed.length > 0 && errors.length === 0,
+      passed: errors.length === 0,
       details: {
-        actual: `${results.passed.length} structured data items valid`,
-        recommended: 'At least one valid structured data item',
+        actual: errors.length ? `${errors.length} issues` : 'Valid structured data',
+        recommended: 'Valid structured data without errors',
+        message: errors.length ? 'Structured data contains validation errors' : '',
         errors
       }
     }
   } catch (error) {
-    const errors = error.res?.failed?.map(err => ({
+    const failedTests = error.res?.failed || []
+    const errors = failedTests.map(err => ({
       group: err.group,
       message: `${err.description}: ${err.error.message}`
-    })) || [{ message: error.message }]
+    }))
 
     return {
       passed: false,
       details: {
         actual: 'Validation failed',
         recommended: 'Valid structured data without errors',
-        errors
+        message: errors.length ? 'Structured data validation errors occurred' : error.message,
+        errors: errors.length ? errors : [{ message: error.message }]
       }
     }
   }

@@ -1,16 +1,25 @@
 import * as cheerio from 'cheerio'
 
+export const scope = 'page'
+
 export default async function titleLengthCheck(content) {
   const $ = cheerio.load(content.html)
   const title = $('title').text().trim()
-  const length = title.length
+
+  const errors = []
+
+  if (title.length < 10) {
+    errors.push({ message: 'Title is too short' })
+  } else if (title.length > 60) {
+    errors.push({ message: 'Title is too long' })
+  }
 
   return {
-    passed: length >= 30 && length <= 60,
+    passed: errors.length === 0,
     details: {
-      actual: `${length} chars`,
-      recommended: '30-60 chars',
-      message: length < 30 ? 'Title too short.' : (length > 60 ? 'Title too long.' : '')
+      actual: `Title length: ${title.length}`,
+      recommended: 'Title length between 10 and 60 characters',
+      errors
     }
   }
 }

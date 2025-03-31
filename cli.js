@@ -79,7 +79,7 @@ if (errors.length) {
   errors.forEach(({ group, checkName, pageUrl, details }, idx) => {
     console.log(`\n${idx + 1}. ❌ ${group}: ${checkName} (${pageUrl})`)
     if (details.message || details.actual || details.recommended) {
-      console.log(`  ${details.message + ' ' || ''}(Actual: ${details.actual || '-'}, Recommended: ${details.recommended || '-'})`)
+      console.log(`  ${details.message ? details.message + ' ' : ''}(Actual: ${details.actual || '-'}, Recommended: ${details.recommended || '-'})`)
     }
     if (details.errors && Array.isArray(details.errors)) {
       details.errors.forEach((error, index) => {

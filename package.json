@@ -5,7 +5,8 @@
   "main": "cli.js",
   "scripts": {
     "audit": "node cli.js",
-    "lint": "standard --fix"
+    "lint": "standard --fix",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
   },
   "keywords": ["seo", "audit", "performance", "website", "puppeteer"],
   "author": "",
@@ -17,17 +18,20 @@
     "lighthouse": "^11.7.1",
     "html-validator": "^6.0.1",
     "chrome-launcher": "^1.1.2",
-    "metascraper": "latest",
-    "metascraper-title": "latest",
-    "metascraper-description": "latest",
-    "metascraper-url": "latest",
     "broken-link-checker": "latest",
     "fast-xml-parser": "latest",
     "robots-parser": "latest",
-    "structured-data-testing-tool": "latest"
+    "structured-data-testing-tool": "latest",
+    "cspell-lib": "latest"
   },
   "devDependencies": {
-    "standard": "^17.1.2"
+    "standard": "^17.1.2",
+    "jest": "latest"
   },
-  "type": "module"
+  "type": "module",
+  "jest": {
+    "collectCoverage": true,
+    "collectCoverageFrom": ["src/**/*.js", "checks/**/*.js"],
+    "coverageDirectory": "coverage"
+  }
 }

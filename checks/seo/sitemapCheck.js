@@ -6,6 +6,18 @@ export default async function sitemapCheck(content) {
 
   try {
     const response = await fetch(sitemapUrl)
+
+    if (!response.ok) {
+      return {
+        passed: false,
+        details: {
+          actual: `HTTP Status ${response.status}`,
+          recommended: 'Valid sitemap.xml at root (status 200)',
+          message: 'sitemap.xml not accessible'
+        }
+      }
+    }
+
     const xmlData = await response.text()
 
     const validation = XMLValidator.validate(xmlData)
@@ -15,7 +27,7 @@ export default async function sitemapCheck(content) {
         details: {
           actual: 'Invalid sitemap.xml',
           recommended: 'Valid XML structure',
-          message: validation.err.msg
+          message: 'Invalid sitemap structure'
         }
       }
     }

@@ -1,20 +1,30 @@
-import metascraper from 'metascraper'
-import title from 'metascraper-title'
-import description from 'metascraper-description'
-import url from 'metascraper-url'
+import * as cheerio from 'cheerio'
 
-const scraper = metascraper([title(), description(), url()])
+export const scope = 'page'
 
 export default async function metaTagsCheck(content) {
-  const metadata = await scraper({ html: content.html, url: content.url })
+  const $ = cheerio.load(content.html)
 
-  const passed = metadata.title && metadata.description && metadata.url
+  const requiredTags = {
+    title: $('title').text().trim(),
+    description: $('meta[name="description"]').attr('content'),
+    viewport: $('meta[name="viewport"]').attr('content'),
+    canonical: $('link[rel="canonical"]').attr('href')
+  }
+
+  const missingTags = Object.entries(requiredTags)
+    .filter(([_, value]) => !value)
+    .map(([tag]) => tag)
+
   return {
-    passed,
+    passed: missingTags.length === 0,
     details: {
-      actual: metadata,
-      recommended: 'Meta tags title, description, url present',
-      message: passed ? '' : 'One or more meta tags are missing'
+      actual: missingTags.length ? `${missingTags.length} missing tags` : 'All required meta tags present',
+      recommended: 'Meta tags: title, description, viewport, canonical present',
+      message: missingTags.length
+        ? `Missing meta tags: ${missingTags.join(', ')}`
+        : 'All required meta tags are present',
+      errors: missingTags.map(tag => ({ message: `Missing meta tag: ${tag}` }))
     }
   }
 }
