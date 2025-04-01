@@ -2,7 +2,7 @@ import robotsCheck from '../../checks/seo/robotsCheck'
 import { jest } from '@jest/globals'
 
 beforeEach(() => {
-  jest.spyOn(global, 'fetch')
+  jest.spyOn(globalThis, 'fetch')
 })
 
 afterEach(() => {
@@ -12,7 +12,7 @@ afterEach(() => {
 test('Robots check passes if robots.txt allows crawling', async () => {
   const content = { url: 'https://example.com' }
 
-  global.fetch.mockResolvedValue({
+  globalThis.fetch.mockResolvedValue({
     status: 200,
     text: () => Promise.resolve('User-agent: *\nDisallow:')
   })
@@ -24,7 +24,7 @@ test('Robots check passes if robots.txt allows crawling', async () => {
 test('Robots check fails if robots.txt disallows crawling', async () => {
   const content = { url: 'https://example.com/private' }
 
-  global.fetch.mockResolvedValue({
+  globalThis.fetch.mockResolvedValue({
     status: 200,
     text: () => Promise.resolve('User-agent: *\nDisallow: /private')
   })
@@ -37,7 +37,7 @@ test('Robots check fails if robots.txt disallows crawling', async () => {
 test('Robots check fails if robots.txt is not accessible', async () => {
   const content = { url: 'https://example.com' }
 
-  global.fetch.mockResolvedValue({
+  globalThis.fetch.mockResolvedValue({
     status: 404,
     text: () => Promise.resolve('Not Found')
   })

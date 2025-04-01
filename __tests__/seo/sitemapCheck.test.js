@@ -2,7 +2,7 @@ import sitemapCheck from '../../checks/seo/sitemapCheck'
 import { jest } from '@jest/globals'
 
 beforeEach(() => {
-  jest.spyOn(global, 'fetch')
+  jest.spyOn(globalThis, 'fetch')
 })
 
 afterEach(() => {
@@ -12,7 +12,7 @@ afterEach(() => {
 test('Sitemap check passes if sitemap.xml is accessible and valid', async () => {
   const content = { url: 'https://example.com' }
 
-  global.fetch = jest.fn(() =>
+  globalThis.fetch = jest.fn(() =>
     Promise.resolve({
       ok: true,
       status: 200,
@@ -28,7 +28,7 @@ test('Sitemap check passes if sitemap.xml is accessible and valid', async () => 
 test('Sitemap check fails if sitemap.xml is not accessible', async () => {
   const content = { url: 'https://example.com' }
 
-  global.fetch.mockResolvedValue({
+  globalThis.fetch.mockResolvedValue({
     ok: false,
     status: 404,
     text: () => Promise.resolve('Not Found')
@@ -42,7 +42,7 @@ test('Sitemap check fails if sitemap.xml is not accessible', async () => {
 test('Sitemap check fails if sitemap.xml is invalid', async () => {
   const content = { url: 'https://example.com' }
 
-  global.fetch.mockResolvedValue({
+  globalThis.fetch.mockResolvedValue({
     ok: true,
     status: 200,
     text: () => Promise.resolve('Invalid sitemap content')
