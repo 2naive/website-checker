@@ -2,7 +2,7 @@
 # 🌐 Website Audit
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![codecov](https://codecov.io/gh/2naive/website-checker/branch/ьфыеук/graph/badge.svg)](https://codecov.io/gh/2naive/website-checker)
+[![codecov](https://codecov.io/gh/2naive/website-checker/graph/badge.svg?token=A4RG8Z8IPA)](https://codecov.io/gh/2naive/website-checker)
 ![CI](https://github.com/2naive/website-checker/actions/workflows/test.yml/badge.svg)
 ![node-current](https://img.shields.io/badge/node-%3E%3D18.x-green)
 ![node-lts](https://img.shields.io/badge/node-lts%2Fhydrogen-brightgreen)
