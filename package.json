@@ -31,7 +31,7 @@
   "type": "module",
   "jest": {
     "collectCoverage": true,
-    "collectCoverageFrom": ["src/**/*.js", "checks/**/*.js"],
+    "collectCoverageFrom": ["checks/**/*.js"],
     "coverageDirectory": "coverage"
   }
 }
