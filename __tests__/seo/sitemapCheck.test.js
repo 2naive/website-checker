@@ -2,7 +2,11 @@ import sitemapCheck from '../../checks/seo/sitemapCheck'
 import { jest } from '@jest/globals'
 
 beforeEach(() => {
-  global.fetch = jest.fn()
+  jest.spyOn(global, 'fetch')
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
 })
 
 test('Sitemap check passes if sitemap.xml is accessible and valid', async () => {

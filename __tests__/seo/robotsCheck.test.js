@@ -2,7 +2,11 @@ import robotsCheck from '../../checks/seo/robotsCheck'
 import { jest } from '@jest/globals'
 
 beforeEach(() => {
-  global.fetch = jest.fn()
+  jest.spyOn(global, 'fetch')
+})
+
+afterEach(() => {
+  jest.restoreAllMocks()
 })
 
 test('Robots check passes if robots.txt allows crawling', async () => {
