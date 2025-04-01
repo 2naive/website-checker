@@ -10,7 +10,8 @@ program
   .argument('<url>', 'URL of the website to audit')
   .option('-j, --json <path>', 'Export results to JSON file')
   .option('-c, --config <path>', 'Config file path', './config.json')
-  .option('-e, --exclude <items>', 'Comma-separated list of checks or groups to exclude (file names without folders and Check.js postfix, or group names)')
+  .option('-e, --exclude <items>', 'Comma-separated list of checks or groups to exclude')
+  .option('-i, --include <items>', 'Comma-separated list of checks or groups to include')
   .option('-d, --depth <number>', 'Depth of parsing child pages', parseInt, 0)
   .parse(process.argv)
 
@@ -24,9 +25,19 @@ const formatCheckName = (name) => {
 }
 
 const url = program.args[0]
-const { json, config, exclude, depth } = program.opts()
+const { json, config, exclude, include, depth } = program.opts()
 const parser = new Parser()
 let checks = await Auditor.loadChecks(config)
+
+if (include) {
+  const includeItems = include.split(',').map(name => name.trim().toLowerCase())
+  checks = checks.filter(({ name }) => {
+    const parts = name.split(/\\|\//)
+    const groupName = parts[0].toLowerCase()
+    const fileName = parts.pop().replace(/Check$/, '').replace(/\.js$/, '').toLowerCase()
+    return includeItems.includes(fileName) || includeItems.includes(groupName)
+  })
+}
 
 if (exclude) {
   const excludeItems = exclude.split(',').map(name => name.trim().toLowerCase())
@@ -53,7 +64,7 @@ await auditor.audit(url, depth, new Set(), (name, result, pageUrl, duration) => 
   const checkName = parts.length > 1 ? parts[1] : parts[0]
   const status = result.passed ? '✅' : '❌'
 
-  process.stdout.write(`${status} [${formatCheckName(group)}] ${formatCheckName(checkName)} (${pageUrl}) – ${duration} ms\n`) // Гарантированный немедленный вывод
+  process.stdout.write(`${status} [${formatCheckName(group)}] ${formatCheckName(checkName)} (${pageUrl}) – ${duration} ms\n`)
 
   if (result.passed) {
     passedCount += 1

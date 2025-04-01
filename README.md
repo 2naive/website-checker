@@ -1,5 +1,5 @@
 
-# 🌐 Website Audit
+# 🌐 Website Checker
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![codecov](https://codecov.io/gh/2naive/website-checker/graph/badge.svg?token=A4RG8Z8IPA)](https://codecov.io/gh/2naive/website-checker)
@@ -16,7 +16,7 @@
 
 ## 🚀 Overview
 
-**Website Audit** helps developers, SEO specialists, and website owners quickly evaluate websites. It provides modular checks covering SEO, HTML validation, performance metrics, spelling errors, structured data validation, and much more.
+**Website Checker** helps developers, SEO specialists, and website owners quickly evaluate websites. It provides modular checks covering SEO, HTML validation, performance metrics, spelling errors, structured data validation, and much more.
 
 - ✅ **SEO Checks**: Robots.txt, sitemap.xml, meta tags, structured data, headings, broken links.
 - 🚀 **Performance Checks**: Response times, Lighthouse performance scores.
@@ -35,8 +35,8 @@
 ### Clone repository:
 
 ```bash
-git clone https://github.com/yourusername/website-audit.git
-cd website-audit
+git clone https://github.com/yourusername/website-checker.git
+cd website-checker
 npm install
 ```
 
@@ -54,6 +54,7 @@ npm run audit https://example.com -- [options]
 
 - `-c, --config <path>`: Use a custom config file (default: `./config.json`)
 - `-j, --json <path>`: Save results to a JSON file
+- `-i, --include <items>`: Comma-separated list of checks or groups to include (runs only specified checks/groups)
 - `-e, --exclude <items>`: Comma-separated list of checks or groups to exclude
 - `-d, --depth <number>`: Depth of child pages to audit (default: 0, audits only the specified URL)
 
