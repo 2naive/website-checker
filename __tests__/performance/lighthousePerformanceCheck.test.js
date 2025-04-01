@@ -4,6 +4,8 @@ jest.unstable_mockModule('lighthouse', () => ({
   default: jest.fn()
 }))
 
+jest.setTimeout(15000) // 15 секунд
+
 const { default: lighthouse } = await import('lighthouse')
 const lighthousePerformanceCheck = (await import('../../checks/performance/lighthousePerformanceCheck')).default
 

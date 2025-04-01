@@ -2,6 +2,13 @@
 # 🌐 Website Audit
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![codecov](https://codecov.io/gh/2naive/website-audit/branch/ьфыеук/graph/badge.svg)](https://codecov.io/gh/2naive/website-audit)
+![CI](https://github.com/2naive/website-audit/actions/workflows/test.yml/badge.svg)
+![node-current](https://img.shields.io/badge/node-%3E%3D18.x-green)
+![node-lts](https://img.shields.io/badge/node-lts%2Fhydrogen-brightgreen)
+![npm](https://img.shields.io/npm/v/website-audit.svg)
+
+
 
 > A modular, easily extendable website auditing tool built with Node.js. It provides detailed insights into SEO, performance, accessibility, content quality, and more.
 
@@ -101,7 +108,7 @@ Pull requests are encouraged!
 
 ## 📃 License
 
-[MIT](LICENSE) © Your Name or Company
+[MIT](LICENSE) © 2naive
 
 ---
 
