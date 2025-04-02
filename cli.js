@@ -26,7 +26,7 @@ const formatCheckName = (name) => {
 
 const url = program.args[0]
 const { json, config, exclude, include, depth } = program.opts()
-const parser = new Parser()
+const parser = new Parser(msg => process.stdout.write(msg))
 let checks = await Auditor.loadChecks(config)
 
 if (include) {

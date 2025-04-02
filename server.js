@@ -5,7 +5,6 @@ import Auditor from './src/auditor.js'
 import Parser from './src/parser.js'
 
 const PORT = 3000
-const parser = new Parser()
 const checks = await Auditor.loadChecks()
 
 http.createServer(async (req, res) => {
@@ -33,6 +32,7 @@ http.createServer(async (req, res) => {
       return true
     })
 
+    const parser = new Parser(msg => res.write(msg))
     const auditor = new Auditor(parser, selectedChecks)
 
     const auditResults = {

@@ -1,25 +1,38 @@
 import puppeteer from 'puppeteer'
 
 export default class Parser {
-  async fetch(url) {
-    const browser = await puppeteer.launch()
-    const page = await browser.newPage()
+  constructor (onLog = () => {}) {
+    this.onLog = onLog
+  }
+
+  async fetch (url) {
+    let browser
+    let page
     try {
+      browser = await puppeteer.launch()
+      page = await browser.newPage()
+
       const start = Date.now()
-      await page.goto(url, { waitUntil: 'networkidle2', timeout: 10000 })
+      await page.goto(url, { waitUntil: 'load', timeout: 15000 }) // networkidle2
       const responseTime = Date.now() - start
 
       const html = await page.content()
-      await browser.close()
+      const duration = ((Date.now() - start) / 1000).toFixed(2)
 
-      const duration = (Date.now() - start) / 1000
-      process.stdout.write(`\n✅ [Loaded] ${url} – ${duration} s\n`) // Гарантированный немедленный вывод
+      const successMsg = `\n✅ [Loaded] ${url} – ${duration} s\n`
+      this.onLog(successMsg)
+
+      await browser.close()
 
       return { html, responseTime, url }
     } catch (error) {
-      await page.close()
-      console.error(`❌ Failed to load ${url}: ${error.message}`)
-      process.exit(1)
+      if (page) await page.close()
+      if (browser) await browser.close()
+
+      const errorMsg = `\n❌ Failed to load ${url}: ${error.message}\n`
+      this.onLog(errorMsg)
+
+      return { html: '', responseTime: null, url, error: error.message }
     }
   }
 }
