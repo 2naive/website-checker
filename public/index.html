@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Website Checker</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem; }
+    .success { color: green; }
+    .error { color: red; }
+    table { border-collapse: collapse; margin-top: 1rem; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f4f4f4; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+    .checks-container { display: flex; gap: 2rem; }
+    .checks-block { flex: 1; }
+    .group-label { font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>🌐 Website Checker</h1>
+
+  <input id="site" placeholder="URL" value="https://example.com">
+  <input id="depth" type="number" placeholder="Depth" value="0">
+  <small>(глубина парсинга страниц)</small>
+
+  <div class="checks-container">
+    <div class="checks-block">
+      <h3>✅ Include Checks</h3>
+      <div id="include-checks"></div>
+    </div>
+
+    <div class="checks-block">
+      <h3>❌ Exclude Checks</h3>
+      <div id="exclude-checks"></div>
+    </div>
+  </div>
+
+  <br>
+  <button onclick="startAudit()">🚀 Start Audit</button>
+
+  <pre id="progress"></pre>
+  <div id="result"></div>
+  <button id="csv-btn" onclick="downloadCSV()" style="display:none;">📥 Download CSV</button>
+
+<script>
+  async function fetchChecks () {
+    const checks = await fetch('/checks').then(res => res.json())
+    renderChecks(checks, 'include-checks', 'include')
+    renderChecks(checks, 'exclude-checks', 'exclude')
+  }
+
+  function renderChecks (checks, containerId, type) {
+    const container = document.getElementById(containerId)
+    const groups = {}
+
+    checks.forEach(check => {
+      const [group, name] = check.split(/[/\\]/)
+      if (!groups[group]) groups[group] = []
+      groups[group].push(check)
+    })
+
+    Object.keys(groups).forEach(group => {
+      const groupDiv = document.createElement('div')
+      groupDiv.innerHTML = `<label class="group-label">
+        <input type="checkbox" onchange="toggleGroup(this, '${type}')"> ${group}
+      </label>`
+      groups[group].forEach(check => {
+        groupDiv.innerHTML += `
+          <div>
+            <label><input type="checkbox" name="${type}" value="${check}"> ${check}</label>
+          </div>`
+      })
+      container.appendChild(groupDiv)
+    })
+  }
+
+  function toggleGroup (checkbox, type) {
+    const checks = checkbox.closest('div').querySelectorAll(`input[name="${type}"]`)
+    checks.forEach(chk => chk.checked = checkbox.checked)
+  }
+
+  async function startAudit () {
+    const site = document.getElementById('site').value
+    const depth = document.getElementById('depth').value
+    const include = Array.from(document.querySelectorAll('input[name="include"]:checked')).map(i => i.value)
+    const exclude = Array.from(document.querySelectorAll('input[name="exclude"]:checked')).map(i => i.value)
+
+    document.getElementById('progress').textContent = '🚀 Audit started...\n'
+    document.getElementById('result').innerHTML = ''
+    document.getElementById('csv-btn').style.display = 'none'
+
+    const startTime = Date.now()
+    const response = await fetch(`/audit?site=${encodeURIComponent(site)}&depth=${depth}&include=${include}&exclude=${exclude}`)
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let resultJson = ''
+    let progressEnded = false
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      const chunk = decoder.decode(value, { stream: true })
+      if (!progressEnded) {
+        const endMarker = '==== Audit Complete ===='
+        if (chunk.includes(endMarker)) {
+          progressEnded = true
+          const [progress, json] = chunk.split(endMarker)
+          document.getElementById('progress').textContent += progress
+          resultJson += json.trim()
+        } else {
+          document.getElementById('progress').textContent += chunk
+        }
+      } else {
+        resultJson += chunk
+      }
+    }
+
+    const totalTime = ((Date.now() - startTime) / 1000).toFixed(2)
+    renderResults(JSON.parse(resultJson), totalTime)
+  }
+
+  let lastResults = []
+
+  function escapeHtml (text) {
+    return text.replace(/[&<>"']/g, char => (
+      {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]
+    ))
+  }
+
+  function sortResults (a, b) {
+    const order = {'site-wide': 0, 'final': 2}
+    const aOrder = order[a.pageUrl] !== undefined ? order[a.pageUrl] : 1
+    const bOrder = order[b.pageUrl] !== undefined ? order[b.pageUrl] : 1
+    if (aOrder !== bOrder) return aOrder - bOrder
+    return a.pageUrl.localeCompare(b.pageUrl) ||
+           a.group.localeCompare(b.group) ||
+           a.checkName.localeCompare(b.checkName)
+  }
+
+  function renderResults (data, totalTime) {
+    lastResults = data.results.sort(sortResults)
+    const resultDiv = document.getElementById('result')
+    let html = `
+      <h2>Audit Summary (completed in ${totalTime}s)</h2>
+      <p class="success">✅ Passed: ${data.passedCount}</p>
+      <p class="error">❌ Failed: ${data.failedCount}</p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Page URL</th>
+            <th>Group</th>
+            <th>Check</th>
+            <th>Status</th>
+            <th>Duration (ms)</th>
+            <th>Recommended</th>
+            <th>Actual</th>
+            <th>Errors</th>
+          </tr>
+        </thead>
+        <tbody>`
+    lastResults.forEach(r => {
+      html += `
+        <tr>
+          <td>${escapeHtml(r.pageUrl)}</td>
+          <td>${escapeHtml(r.group)}</td>
+          <td>${escapeHtml(r.checkName)}</td>
+          <td>${r.status ? '✅' : '❌'}</td>
+          <td>${r.duration}</td>
+          <td>${escapeHtml(r.details.recommended)}</td>
+          <td>${escapeHtml(r.details.actual)}</td>
+          <td>${escapeHtml(r.details.errors.map(e => e.message).join('; '))}</td>
+        </tr>`
+    })
+    html += '</tbody></table>'
+    resultDiv.innerHTML = html
+    document.getElementById('csv-btn').style.display = 'inline-block'
+  }
+
+  function downloadCSV () {
+    const headers = ['Page URL','Group','Check','Status','Duration (ms)','Recommended','Actual','Errors']
+    const rows = lastResults.map(r => [
+      r.pageUrl, r.group, r.checkName,
+      r.status ? 'Passed' : 'Failed',
+      r.duration, `"${r.details.recommended}"`,
+      `"${r.details.actual}"`,
+      `"${r.details.errors.map(e => e.message).join('; ')}"`
+    ])
+    const csvContent = '\uFEFF' + [headers, ...rows].map(e => e.join(',')).join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = 'audit_results.csv'
+    link.click()
+  }
+
+  fetchChecks()
+</script>
+
+</body>
+</html>

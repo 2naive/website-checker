@@ -6,7 +6,8 @@
   "scripts": {
     "audit": "node cli.js",
     "lint": "standard --fix",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+    "server": "node server.js"
   },
   "keywords": ["seo", "audit", "performance", "website", "puppeteer"],
   "author": "",

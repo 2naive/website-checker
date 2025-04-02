@@ -50,6 +50,12 @@ npm install
 npm run audit https://example.com -- [options]
 ```
 
+### Run as web service in your browser
+
+```bash
+npm run server
+```
+
 ### Options:
 
 - `-c, --config <path>`: Use a custom config file (default: `./config.json`)
