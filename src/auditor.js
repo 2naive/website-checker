@@ -18,6 +18,9 @@ export default class Auditor {
     const pageChecks = this.checks.filter(({ scope }) => scope !== 'site' && scope !== 'final')
 
     const siteContent = await this.parser.fetch(url)
+    if (siteContent.error) {
+      return
+    }
     const context = { cheerio }
 
     await Promise.all(siteChecks.map(async ({ name, check }) => {
@@ -43,6 +46,17 @@ export default class Auditor {
     visitedUrls.add(url)
 
     const content = await this.parser.fetch(url)
+    if (content.error) {
+      onResult('server/available', {
+        passed: false,
+        details: {
+          actual: content.error,
+          recommended: 'Page loaded successfully',
+          errors: [{ message: content.error }]
+        }
+      }, url, 0)
+      return
+    }
 
     await Promise.all(pageChecks.map(async ({ name, check }) => {
       const start = Date.now()

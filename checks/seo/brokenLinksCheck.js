@@ -9,7 +9,7 @@ export default function brokenLinksCheck(content) {
       requestMethod: 'head',
       timeout: 3000,
       filterLevel: 3,
-      maxSocketsPerHost: 8
+      maxSocketsPerHost: 3
     }, {
       link: result => {
         if (result.broken && result.url && result.url.resolved) {
