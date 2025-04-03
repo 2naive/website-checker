@@ -23,7 +23,9 @@
     "fast-xml-parser": "latest",
     "robots-parser": "latest",
     "structured-data-testing-tool": "latest",
-    "cspell-lib": "latest"
+    "cspell-lib": "latest",
+    "i18next": "^23.10.0",
+    "i18next-browser-languagedetector": "^7.2.0"
   },
   "devDependencies": {
     "standard": "^17.1.2",

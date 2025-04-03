@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Website Checker</title>
+  <title data-i18n="title">Website Checker</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 2rem; }
     .success { color: green; }
@@ -14,36 +14,103 @@
     .checks-container { display: flex; gap: 2rem; }
     .checks-block { flex: 1; }
     .group-label { font-weight: bold; }
+    .language-selector { margin-bottom: 1rem; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/i18next@23.10.0/dist/umd/i18next.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/i18next-browser-languagedetector@7.2.0/dist/umd/i18nextBrowserLanguageDetector.min.js"></script>
 </head>
 <body>
 
-  <h1>🌐 Website Checker</h1>
+  <div class="language-selector">
+    <label for="language" data-i18n="language">Language</label>:
+    <select id="language" onchange="changeLanguage(this.value)">
+      <option value="en" data-i18n="languages.en">English</option>
+      <option value="ru" data-i18n="languages.ru">Русский</option>
+      <option value="es" data-i18n="languages.es">Español</option>
+      <option value="fr" data-i18n="languages.fr">Français</option>
+      <option value="de" data-i18n="languages.de">Deutsch</option>
+    </select>
+  </div>
 
-  <input id="site" placeholder="URL" value="https://example.com">
-  <input id="depth" type="number" placeholder="Depth" value="0">
-  <small>(parsing depth)</small>
+  <h1>🌐 <span data-i18n="title">Website Checker</span></h1>
+
+  <input id="site" data-i18n="[placeholder]urlPlaceholder" value="https://example.com">
+  <input id="depth" type="number" data-i18n="[placeholder]depthPlaceholder" value="0">
+  <small data-i18n="parsingDepth">(parsing depth)</small>
 
   <div class="checks-container">
     <div class="checks-block">
-      <h3>✅ Include Checks</h3>
+      <h3 data-i18n="includeChecks">✅ Include Checks</h3>
       <div id="include-checks"></div>
     </div>
 
     <div class="checks-block">
-      <h3>❌ Exclude Checks</h3>
+      <h3 data-i18n="excludeChecks">❌ Exclude Checks</h3>
       <div id="exclude-checks"></div>
     </div>
   </div>
 
   <br>
-  <button onclick="startAudit()">🚀 Start Audit</button>
+  <button onclick="startAudit()" data-i18n="startAudit">🚀 Start Audit</button>
 
   <pre id="progress"></pre>
   <div id="result"></div>
-  <button id="csv-btn" onclick="downloadCSV()" style="display:none;">📥 Download CSV</button>
+  <button id="csv-btn" onclick="downloadCSV()" style="display:none;" data-i18n="downloadCSV">📥 Download CSV</button>
 
 <script>
+  // Initialize i18next
+  async function initializeI18n() {
+    await i18next
+      .use(i18nextBrowserLanguageDetector)
+      .init({
+        fallbackLng: 'en',
+        debug: true,
+        interpolation: {
+          escapeValue: false
+        },
+        resources: {
+          en: {
+            translation: await fetch('/translations/en.json').then(res => res.json())
+          },
+          ru: {
+            translation: await fetch('/translations/ru.json').then(res => res.json())
+          }
+        }
+      });
+
+    updateContent();
+    fetchChecks();
+    
+    // Set initial language in select
+    document.getElementById('language').value = i18next.language;
+  }
+
+  function updateContent() {
+    // Update regular content
+    document.querySelectorAll('[data-i18n]').forEach(element => {
+      const key = element.getAttribute('data-i18n');
+      if (key.startsWith('[')) {
+        // Handle attributes like [placeholder]
+        const match = key.match(/\[(.*?)\](.*)/);
+        if (match) {
+          const [, attr, tKey] = match;
+          element.setAttribute(attr, i18next.t(tKey));
+        }
+      } else {
+        element.textContent = i18next.t(key);
+      }
+    });
+
+    // Update document title
+    document.title = i18next.t('title');
+  }
+
+  function changeLanguage(lng) {
+    i18next.changeLanguage(lng).then(() => {
+      updateContent();
+    });
+  }
+
   async function fetchChecks () {
     const checks = await fetch('/checks').then(res => res.json())
     renderChecks(checks, 'include-checks', 'include')
@@ -52,6 +119,7 @@
 
   function renderChecks (checks, containerId, type) {
     const container = document.getElementById(containerId)
+    container.innerHTML = ''; // Clear existing content
     const groups = {}
 
     checks.forEach(check => {
@@ -86,7 +154,7 @@
     const include = Array.from(document.querySelectorAll('input[name="include"]:checked')).map(i => i.value)
     const exclude = Array.from(document.querySelectorAll('input[name="exclude"]:checked')).map(i => i.value)
 
-    document.getElementById('progress').textContent = '🚀 Audit started...\n'
+    document.getElementById('progress').textContent = i18next.t('auditStarted') + '\n'
     document.getElementById('result').innerHTML = ''
     document.getElementById('csv-btn').style.display = 'none'
 
@@ -94,6 +162,7 @@
     const response = await fetch(`/audit?site=${encodeURIComponent(site)}&depth=${depth}&include=${include}&exclude=${exclude}`)
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
+    let progressText = ''
     let resultJson = ''
     let progressEnded = false
 
@@ -101,29 +170,39 @@
       const { done, value } = await reader.read()
       if (done) break
       const chunk = decoder.decode(value, { stream: true })
+      
       if (!progressEnded) {
         const endMarker = '==== Audit Complete ===='
         if (chunk.includes(endMarker)) {
           progressEnded = true
           const [progress, json] = chunk.split(endMarker)
-          document.getElementById('progress').textContent += progress
-          resultJson += json.trim()
+          progressText += progress
+          document.getElementById('progress').textContent = progressText
+          resultJson = json.trim()
         } else {
-          document.getElementById('progress').textContent += chunk
+          progressText += chunk
+          document.getElementById('progress').textContent = progressText
         }
       } else {
         resultJson += chunk
       }
     }
 
-    const totalTime = ((Date.now() - startTime) / 1000).toFixed(2)
-    renderResults(JSON.parse(resultJson), totalTime)
+    try {
+      const data = JSON.parse(resultJson)
+      const totalTime = ((Date.now() - startTime) / 1000).toFixed(2)
+      renderResults(data, totalTime)
+    } catch (error) {
+      console.error('Failed to parse results:', error)
+      document.getElementById('result').innerHTML = `<p class="error">Error parsing results: ${error.message}</p>`
+    }
   }
 
   let lastResults = []
 
   function escapeHtml (text) {
-    return text.replace(/[&<>"']/g, char => (
+    if (text === undefined || text === null) return ''
+    return String(text).replace(/[&<>"']/g, char => (
       {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]
     ))
   }
@@ -139,28 +218,35 @@
   }
 
   function renderResults (data, totalTime) {
+    if (!data || !Array.isArray(data.results)) {
+      document.getElementById('result').innerHTML = `<p class="error">Invalid results format</p>`
+      return
+    }
+
     lastResults = data.results.sort(sortResults)
     const resultDiv = document.getElementById('result')
     let html = `
-      <h2>Audit Summary (completed in ${totalTime}s)</h2>
-      <p class="success">✅ Passed: ${data.passedCount}</p>
-      <p class="error">❌ Failed: ${data.failedCount}</p>
+      <h2>${i18next.t('auditSummary', { time: totalTime })}</h2>
+      <p class="success">${i18next.t('passed', { count: data.passedCount })}</p>
+      <p class="error">${i18next.t('failed', { count: data.failedCount })}</p>
 
       <table>
         <thead>
           <tr>
-            <th>Page URL</th>
-            <th>Group</th>
-            <th>Check</th>
-            <th>Status</th>
-            <th>Duration (ms)</th>
-            <th>Recommended</th>
-            <th>Actual</th>
-            <th>Errors</th>
+            <th>${i18next.t('tableHeaders.pageUrl')}</th>
+            <th>${i18next.t('tableHeaders.group')}</th>
+            <th>${i18next.t('tableHeaders.check')}</th>
+            <th>${i18next.t('tableHeaders.status')}</th>
+            <th>${i18next.t('tableHeaders.duration')}</th>
+            <th>${i18next.t('tableHeaders.recommended')}</th>
+            <th>${i18next.t('tableHeaders.actual')}</th>
+            <th>${i18next.t('tableHeaders.errors')}</th>
           </tr>
         </thead>
         <tbody>`
+    
     lastResults.forEach(r => {
+      const details = r.details || {}
       html += `
         <tr>
           <td>${escapeHtml(r.pageUrl)}</td>
@@ -168,9 +254,9 @@
           <td>${escapeHtml(r.checkName)}</td>
           <td>${r.status ? '✅' : '❌'}</td>
           <td>${r.duration}</td>
-          <td>${escapeHtml(r.details.recommended)}</td>
-          <td>${escapeHtml(r.details.actual)}</td>
-          <td>${escapeHtml(r.details.errors.map(e => e.message).join('; '))}</td>
+          <td>${escapeHtml(details.recommended)}</td>
+          <td>${escapeHtml(details.actual)}</td>
+          <td>${escapeHtml((details.errors || []).map(e => e.message || e).join('; '))}</td>
         </tr>`
     })
     html += '</tbody></table>'
@@ -179,10 +265,19 @@
   }
 
   function downloadCSV () {
-    const headers = ['Page URL','Group','Check','Status','Duration (ms)','Recommended','Actual','Errors']
+    const headers = [
+      i18next.t('tableHeaders.pageUrl'),
+      i18next.t('tableHeaders.group'),
+      i18next.t('tableHeaders.check'),
+      i18next.t('tableHeaders.status'),
+      i18next.t('tableHeaders.duration'),
+      i18next.t('tableHeaders.recommended'),
+      i18next.t('tableHeaders.actual'),
+      i18next.t('tableHeaders.errors')
+    ]
     const rows = lastResults.map(r => [
       r.pageUrl, r.group, r.checkName,
-      r.status ? 'Passed' : 'Failed',
+      r.status ? i18next.t('passed', { count: 1 }) : i18next.t('failed', { count: 1 }),
       r.duration, `"${r.details.recommended}"`,
       `"${r.details.actual}"`,
       `"${r.details.errors.map(e => e.message).join('; ')}"`
@@ -195,7 +290,8 @@
     link.click()
   }
 
-  fetchChecks()
+  // Start initialization
+  initializeI18n();
 </script>
 
 </body>

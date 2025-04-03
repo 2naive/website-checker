@@ -1,0 +1,33 @@
+{
+  "title": "Website Checker",
+  "urlPlaceholder": "URL",
+  "depthPlaceholder": "Depth",
+  "parsingDepth": "(parsing depth)",
+  "includeChecks": "✅ Include Checks",
+  "excludeChecks": "❌ Exclude Checks",
+  "startAudit": "🚀 Start Audit",
+  "auditStarted": "🚀 Audit started...",
+  "auditComplete": "Audit Complete",
+  "auditSummary": "Audit Summary (completed in {{time}}s)",
+  "passed": "✅ Passed: {{count}}",
+  "failed": "❌ Failed: {{count}}",
+  "tableHeaders": {
+    "pageUrl": "Page URL",
+    "group": "Group",
+    "check": "Check",
+    "status": "Status",
+    "duration": "Duration (ms)",
+    "recommended": "Recommended",
+    "actual": "Actual",
+    "errors": "Errors"
+  },
+  "downloadCSV": "📥 Download CSV",
+  "language": "Language",
+  "languages": {
+    "en": "English",
+    "es": "Español",
+    "fr": "Français",
+    "de": "Deutsch",
+    "ru": "Русский"
+  }
+} 

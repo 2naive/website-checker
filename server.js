@@ -13,6 +13,18 @@ http.createServer(async (req, res) => {
   if (parsedUrl.pathname === '/') {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' })
     fs.createReadStream('./public/index.html').pipe(res)
+  } else if (parsedUrl.pathname.startsWith('/translations/')) {
+    const lang = parsedUrl.pathname.split('/').pop().replace('.json', '')
+    const translationFile = `./public/translations/${lang}.json`
+    
+    try {
+      const translations = JSON.parse(fs.readFileSync(translationFile, 'utf8'))
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' })
+      res.end(JSON.stringify(translations))
+    } catch (error) {
+      res.writeHead(404)
+      res.end('Translation not found')
+    }
   } else if (parsedUrl.pathname === '/checks') {
     res.writeHead(200, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify(checks.map(c => c.name)))
@@ -44,7 +56,6 @@ http.createServer(async (req, res) => {
     await auditor.audit(site, Number(depth) || 0, new Set(), (name, result, pageUrl, duration) => {
       const [group, checkName] = name.split(/\\|\//)
 
-      // промежуточный статус без деталей ошибок
       res.write(`${result.passed ? '✅' : '❌'} [${group}\\${checkName}] (${pageUrl}) - ${duration} ms\n`)
 
       auditResults.results.push({
