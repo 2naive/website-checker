@@ -83,4 +83,4 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-.code-workspace
+*.code-workspace
