@@ -2,60 +2,468 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="title">Website Checker</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2rem; }
-    .success { color: green; }
-    .error { color: red; }
-    table { border-collapse: collapse; margin-top: 1rem; width: 100%; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background: #f4f4f4; }
-    pre { white-space: pre-wrap; word-wrap: break-word; }
-    .checks-container { display: flex; gap: 2rem; }
-    .checks-block { flex: 1; }
-    .group-label { font-weight: bold; }
-    .language-selector { margin-bottom: 1rem; }
+    :root {
+      --primary-color: #2196F3;
+      --error-color: #f44336;
+      --success-color: #4CAF50;
+      --border-color: #e0e0e0;
+      --bg-hover: #f5f5f5;
+    }
+    
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 2rem;
+      background: #fafafa;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 100%;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .header {
+      max-width: 1400px;
+      margin: 0 auto 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo {
+      color: var(--primary-color);
+      font-size: 1.5rem;
+    }
+
+    .language-selector {
+      margin-left: auto;
+    }
+
+    .language-selector select {
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .main-content {
+      max-width: 1400px;
+      margin: 0 auto 2rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    .input-group {
+      display: flex;
+      gap: 1rem;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+      align-items: flex-start;
+    }
+
+    .input-field {
+      flex: 1;
+      background: white;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+    }
+
+    .depth-field {
+      width: 100px;
+    }
+
+    .depth-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
+
+    .checks-toggle {
+      padding: 1rem 1.5rem;
+      background: #f8f9fa;
+      border: none;
+      border-bottom: 1px solid var(--border-color);
+      width: 100%;
+      text-align: left;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #333;
+      transition: background-color 0.2s;
+    }
+
+    .checks-toggle:hover {
+      background: var(--bg-hover);
+    }
+
+    .checks-toggle .icon {
+      font-family: system-ui;
+      font-size: 0.8rem;
+      width: 16px;
+      height: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s;
+      color: #666;
+    }
+
+    .checks-toggle.collapsed .icon {
+      transform: rotate(-90deg);
+    }
+
+    .checks-container {
+      display: flex;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      transition: all 0.3s;
+    }
+
+    .checks-container.collapsed {
+      display: none;
+    }
+
+    .checks-block {
+      flex: 1;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .checks-header {
+      padding: 0.75rem 1rem;
+      background: #f8f9fa;
+      border-bottom: 1px solid var(--border-color);
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .checks-header.include {
+      color: var(--success-color);
+    }
+
+    .checks-header.exclude {
+      color: var(--error-color);
+    }
+
+    .check-group {
+      border-bottom: 1px solid var(--border-color);
+      background: white;
+    }
+
+    .check-group:last-child {
+      border-bottom: none;
+    }
+
+    .group-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #f8f9fa;
+      font-weight: 500;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.9rem;
+      transition: background-color 0.2s;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .group-label:hover {
+      background: var(--bg-hover);
+    }
+
+    .check-items {
+      padding: 0.75rem 0;
+      background: white;
+    }
+
+    .check-item {
+      padding: 0.35rem 1rem 0.35rem 2.5rem;
+    }
+
+    .check-item label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      user-select: none;
+      font-size: 0.9rem;
+    }
+
+    .check-item:hover {
+      background: var(--bg-hover);
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .actions {
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .start-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .start-button:hover {
+      background: #1976D2;
+    }
+
+    .start-button:active {
+      background: #1565C0;
+    }
+
+    #progress {
+      margin-top: 2rem;
+      padding: 1rem;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      font-family: monospace;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    #result {
+      margin-top: 1rem;
+    }
+
+    .results-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .results-title {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .results-summary {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .results-summary p {
+      margin: 0;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .results-summary .success {
+      background: #e8f5e9;
+      color: var(--success-color);
+    }
+
+    .results-summary .error {
+      background: #ffebee;
+      color: var(--error-color);
+    }
+
+    .result-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      margin: 1rem 0;
+    }
+
+    .result-table th,
+    .result-table td {
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .result-table th {
+      background: #f8f9fa;
+      font-weight: 500;
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      box-shadow: 0 1px 0 var(--border-color);
+    }
+
+    .result-table td {
+      background: white;
+    }
+
+    .result-table tr:hover td {
+      background: #f8f9fa;
+    }
+
+    .result-table td.url {
+
+    }
+
+    .result-table td.group,
+    .result-table td.check {
+      white-space: nowrap;
+    }
+
+    .result-table td.status {
+      text-align: center;
+      width: 40px;
+      padding: 0.5rem 0;
+    }
+
+    .result-table td.duration {
+      font-family: monospace;
+      text-align: right;
+      width: 60px;
+      white-space: nowrap;
+      padding-right: 1rem;
+    }
+
+    .result-table td.recommended,
+    .result-table td.actual,
+    .result-table td.errors {
+      min-width: 250px;
+      max-width: none;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .result-table td.errors {
+      color: var(--error-color);
+    }
+
+    .csv-button {
+      padding: 0.5rem 1rem;
+      background: white;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+      color: #666;
+      font-size: 0.9rem;
+      font-weight: normal;
+    }
+
+    .csv-button:hover {
+      background: var(--bg-hover);
+      border-color: #ccc;
+      color: #333;
+    }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/i18next@23.10.0/dist/umd/i18next.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/i18next-browser-languagedetector@7.2.0/dist/umd/i18nextBrowserLanguageDetector.min.js"></script>
 </head>
 <body>
-
-  <div class="language-selector">
-    <label for="language" data-i18n="language">Language</label>:
-    <select id="language" onchange="changeLanguage(this.value)">
-      <option value="en" data-i18n="languages.en">English</option>
-      <option value="ru" data-i18n="languages.ru">Русский</option>
-      <option value="es" data-i18n="languages.es">Español</option>
-      <option value="fr" data-i18n="languages.fr">Français</option>
-      <option value="de" data-i18n="languages.de">Deutsch</option>
-    </select>
-  </div>
-
-  <h1>🌐 <span data-i18n="title">Website Checker</span></h1>
-
-  <input id="site" data-i18n="[placeholder]urlPlaceholder" value="https://example.com">
-  <input id="depth" type="number" data-i18n="[placeholder]depthPlaceholder" value="0">
-  <small data-i18n="parsingDepth">(parsing depth)</small>
-
-  <div class="checks-container">
-    <div class="checks-block">
-      <h3 data-i18n="includeChecks">✅ Include Checks</h3>
-      <div id="include-checks"></div>
+  <div class="container">
+    <div class="header">
+      <div class="logo">🌐</div>
+      <h1 data-i18n="title"></h1>
+      <div class="language-selector">
+        <select id="language" onchange="changeLanguage(this.value)">
+          <option value="en" data-i18n="languages.en"></option>
+          <option value="ru" data-i18n="languages.ru"></option>
+          <option value="es" data-i18n="languages.es"></option>
+          <option value="fr" data-i18n="languages.fr"></option>
+          <option value="de" data-i18n="languages.de"></option>
+        </select>
+      </div>
     </div>
 
-    <div class="checks-block">
-      <h3 data-i18n="excludeChecks">❌ Exclude Checks</h3>
-      <div id="exclude-checks"></div>
+    <div class="main-content">
+      <div class="input-group">
+        <input id="site" class="input-field" data-i18n="[placeholder]urlPlaceholder" value="https://example.com">
+        <div>
+          <input id="depth" class="input-field depth-field" type="number" value="0" min="0">
+          <div class="depth-label" data-i18n="parsingDepth"></div>
+        </div>
+      </div>
+
+      <button class="checks-toggle" onclick="toggleChecks(this)">
+        <span class="icon">⚙️</span>
+        <span data-i18n="configureChecks"></span>
+      </button>
+
+      <div class="checks-container collapsed">
+        <div class="checks-block">
+          <div class="checks-header include">
+            <span data-i18n="includeChecks"></span>
+          </div>
+          <div id="include-checks"></div>
+        </div>
+
+        <div class="checks-block">
+          <div class="checks-header exclude">
+            <span data-i18n="excludeChecks"></span>
+          </div>
+          <div id="exclude-checks"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="start-button" onclick="startAudit()">
+          <span data-i18n="startAudit"></span>
+        </button>
+      </div>
+    </div>
+
+    <pre id="progress"></pre>
+    <div class="results-container">
+      <div id="result"></div>
     </div>
   </div>
-
-  <br>
-  <button onclick="startAudit()" data-i18n="startAudit">🚀 Start Audit</button>
-
-  <pre id="progress"></pre>
-  <div id="result"></div>
-  <button id="csv-btn" onclick="downloadCSV()" style="display:none;" data-i18n="downloadCSV">📥 Download CSV</button>
 
 <script>
   // Initialize i18next
@@ -119,32 +527,64 @@
 
   function renderChecks (checks, containerId, type) {
     const container = document.getElementById(containerId)
-    container.innerHTML = ''; // Clear existing content
+    container.innerHTML = ''
     const groups = {}
 
     checks.forEach(check => {
       const [group, name] = check.split(/[/\\]/)
       if (!groups[group]) groups[group] = []
-      groups[group].push(check)
+      const cleanName = name
+        .replace(/Check(s)?(\s|$)/g, '')
+        .replace(/^Check/, '')
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase()
+      groups[group].push({ fullName: check, name: cleanName })
     })
 
-    Object.keys(groups).forEach(group => {
+    Object.keys(groups).sort().forEach(group => {
       const groupDiv = document.createElement('div')
-      groupDiv.innerHTML = `<label class="group-label">
-        <input type="checkbox" onchange="toggleGroup(this, '${type}')"> ${group}
-      </label>`
-      groups[group].forEach(check => {
-        groupDiv.innerHTML += `
-          <div>
-            <label><input type="checkbox" name="${type}" value="${check}"> ${check}</label>
-          </div>`
+      groupDiv.className = 'check-group'
+      
+      const groupLabel = document.createElement('label')
+      groupLabel.className = 'group-label'
+      
+      const checkbox = document.createElement('input')
+      checkbox.type = 'checkbox'
+      checkbox.onchange = () => toggleGroup(checkbox, type)
+      
+      groupLabel.appendChild(checkbox)
+      groupLabel.appendChild(document.createTextNode(` ${group}`))
+      groupDiv.appendChild(groupLabel)
+
+      const checksContainer = document.createElement('div')
+      checksContainer.className = 'check-items'
+
+      groups[group].sort((a, b) => a.name.localeCompare(b.name)).forEach(check => {
+        const checkDiv = document.createElement('div')
+        checkDiv.className = 'check-item'
+        const label = document.createElement('label')
+        
+        const checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        checkbox.name = type
+        checkbox.value = check.fullName
+        
+        label.appendChild(checkbox)
+        label.appendChild(document.createTextNode(check.name))
+        checkDiv.appendChild(label)
+        checksContainer.appendChild(checkDiv)
       })
+
+      groupDiv.appendChild(checksContainer)
       container.appendChild(groupDiv)
     })
   }
 
   function toggleGroup (checkbox, type) {
-    const checks = checkbox.closest('div').querySelectorAll(`input[name="${type}"]`)
+    const groupDiv = checkbox.closest('div')
+    const checks = groupDiv.querySelectorAll(`input[name="${type}"]`)
     checks.forEach(chk => chk.checked = checkbox.checked)
   }
 
@@ -156,7 +596,6 @@
 
     document.getElementById('progress').textContent = i18next.t('auditStarted') + '\n'
     document.getElementById('result').innerHTML = ''
-    document.getElementById('csv-btn').style.display = 'none'
 
     const startTime = Date.now()
     const response = await fetch(`/audit?site=${encodeURIComponent(site)}&depth=${depth}&include=${include}&exclude=${exclude}`)
@@ -226,11 +665,18 @@
     lastResults = data.results.sort(sortResults)
     const resultDiv = document.getElementById('result')
     let html = `
-      <h2>${i18next.t('auditSummary', { time: totalTime })}</h2>
-      <p class="success">${i18next.t('passed', { count: data.passedCount })}</p>
-      <p class="error">${i18next.t('failed', { count: data.failedCount })}</p>
-
-      <table>
+      <div class="results-summary">
+        <p class="success">${i18next.t('passed', { count: data.passedCount })}</p>
+        <p class="error">${i18next.t('failed', { count: data.failedCount })}</p>
+      </div>
+      <br>
+      <div class="results-header">
+        <h2 class="results-title">${i18next.t('auditSummary', { time: totalTime })}</h2>
+        <button id="csv-btn" class="csv-button" onclick="downloadCSV()">
+          <span data-i18n="downloadCSV">${i18next.t('downloadCSV')}</span>
+        </button>
+      </div>
+      <table class="result-table">
         <thead>
           <tr>
             <th>${i18next.t('tableHeaders.pageUrl')}</th>
@@ -249,19 +695,18 @@
       const details = r.details || {}
       html += `
         <tr>
-          <td>${escapeHtml(r.pageUrl)}</td>
-          <td>${escapeHtml(r.group)}</td>
-          <td>${escapeHtml(r.checkName)}</td>
-          <td>${r.status ? '✅' : '❌'}</td>
-          <td>${r.duration}</td>
-          <td>${escapeHtml(details.recommended)}</td>
-          <td>${escapeHtml(details.actual)}</td>
-          <td>${escapeHtml((details.errors || []).map(e => e.message || e).join('; '))}</td>
+          <td class="url">${escapeHtml(r.pageUrl)}</td>
+          <td class="group">${escapeHtml(r.group)}</td>
+          <td class="check">${escapeHtml(r.checkName)}</td>
+          <td class="status">${r.status ? '✅' : '❌'}</td>
+          <td class="duration">${r.duration} ms</td>
+          <td class="recommended">${escapeHtml(details.recommended)}</td>
+          <td class="actual">${escapeHtml(details.actual)}</td>
+          <td class="errors">${escapeHtml((details.errors || []).map(e => e.message || e).join('; '))}</td>
         </tr>`
     })
     html += '</tbody></table>'
     resultDiv.innerHTML = html
-    document.getElementById('csv-btn').style.display = 'inline-block'
   }
 
   function downloadCSV () {
@@ -288,6 +733,11 @@
     link.href = URL.createObjectURL(blob)
     link.download = 'audit_results.csv'
     link.click()
+  }
+
+  function toggleChecks(button) {
+    button.classList.toggle('collapsed');
+    button.nextElementSibling.classList.toggle('collapsed');
   }
 
   // Start initialization
