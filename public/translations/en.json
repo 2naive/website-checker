@@ -3,6 +3,7 @@
   "urlPlaceholder": "URL",
   "depthPlaceholder": "Depth",
   "parsingDepth": "(parsing depth)",
+  "configureChecks": "Configure Checks",
   "includeChecks": "✅ Include Checks",
   "excludeChecks": "❌ Exclude Checks",
   "startAudit": "🚀 Start Audit",
@@ -16,7 +17,7 @@
     "group": "Group",
     "check": "Check",
     "status": "Status",
-    "duration": "Duration (ms)",
+    "duration": "Duration",
     "recommended": "Recommended",
     "actual": "Actual",
     "errors": "Errors"
