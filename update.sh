@@ -19,7 +19,7 @@ if [ $LOCAL = $REMOTE ]; then
     echo "✅ Already up to date"
 else
     echo "📥 Updates available, pulling changes..."
-    git pull origin main
+    git pull origin master
     
     echo "📦 Installing dependencies..."
     npm install

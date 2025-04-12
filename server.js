@@ -4,7 +4,7 @@ import url from 'url'
 import Auditor from './src/auditor.js'
 import Parser from './src/parser.js'
 
-const PORT = 3000
+const PORT = process.env.PORT || (process.env.NODE_ENV === 'production' ? 80 : 3000)
 const checks = await Auditor.loadChecks()
 
 http.createServer(async (req, res) => {
