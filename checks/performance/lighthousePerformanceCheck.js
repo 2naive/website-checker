@@ -1,19 +1,22 @@
-import * as chromeLauncher from 'chrome-launcher'
+import puppeteer from 'puppeteer'
 
 export default async function lighthousePerformanceCheck(content) {
   const { default: lighthouse } = await import('lighthouse')
-  const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] })
+  const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--no-sandbox']
+  })
   const options = {
     logLevel: 'error',
     output: 'json',
-    port: chrome.port,
+    port: new URL(browser.wsEndpoint()).port,
     disableStorageReset: true
   }
 
   const runnerResult = await lighthouse(content.url, options)
   const performanceScore = runnerResult.lhr.categories.performance.score * 100
 
-  await chrome.kill()
+  await browser.close()
 
   return {
     passed: performanceScore >= 80,

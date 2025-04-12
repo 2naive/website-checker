@@ -25,7 +25,7 @@ else
     npm install
     
     echo "🔄 Restarting application..."
-    pm2 restart site-checker
+    pm2 restart website-checker
     
     echo "✅ Update completed!"
 fi 
