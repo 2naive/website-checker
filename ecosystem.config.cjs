@@ -6,13 +6,11 @@ module.exports = {
     autorestart: true,
     env: {
       NODE_ENV: 'development',
-      PORT: 3000,
-      PUPPETEER_ARGS: '--no-sandbox,--disable-setuid-sandbox'
+      PORT: 3000
     },
     env_production: {
       NODE_ENV: 'production',
-      PORT: 80,
-      PUPPETEER_ARGS: '--no-sandbox,--disable-setuid-sandbox'
+      PORT: 80
     }
   }]
 } 
